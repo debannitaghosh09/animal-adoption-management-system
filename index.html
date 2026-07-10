@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animal Adoption Management System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Animal Adoption Management System</h1>
+            <p>Manage shelter animals with add, search, update, delete, adopt, and report functions.</p>
+        </header>
+
+        <section class="controls">
+            <button id="showAddForm">Add New Animal</button>
+            <button id="showAllAnimals">View All Animals</button>
+            <button id="showAvailableAnimals">Available Animals</button>
+            <button id="showSpeciesCount">Count by Species</button>
+        </section>
+
+        <section class="panel" id="messagePanel"></section>
+
+        <section class="panel" id="formPanel">
+            <h2 id="formTitle">Add New Animal</h2>
+            <form id="animalForm">
+                <div class="grid">
+                    <label for="animalId">Animal ID</label>
+                    <input type="number" id="animalId" min="1" required>
+
+                    <label for="animalName">Name</label>
+                    <input type="text" id="animalName" maxlength="50" required>
+
+                    <label for="animalSpecies">Species</label>
+                    <input type="text" id="animalSpecies" maxlength="30" required>
+
+                    <label for="animalBreed">Breed</label>
+                    <input type="text" id="animalBreed" maxlength="40" required>
+
+                    <label for="animalAge">Age</label>
+                    <input type="number" id="animalAge" min="0" required>
+
+                    <label for="animalGender">Gender</label>
+                    <select id="animalGender" required>
+                        <option value="">Select</option>
+                        <option value="M">M</option>
+                        <option value="F">F</option>
+                    </select>
+
+                    <label for="animalHealth">Health Status</label>
+                    <input type="text" id="animalHealth" maxlength="40" required>
+
+                    <label for="animalStatus">Adoption Status</label>
+                    <select id="animalStatus" required>
+                        <option value="Available">Available</option>
+                        <option value="Adopted">Adopted</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" id="saveAnimal">Save Animal</button>
+                    <button type="button" id="cancelEdit" class="secondary">Cancel</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="panel" id="searchPanel">
+            <h2>Search Animal by ID</h2>
+            <div class="search-group">
+                <input type="number" id="searchId" min="1" placeholder="Enter Animal ID">
+                <button id="searchButton">Search</button>
+            </div>
+            <div id="searchResult"></div>
+        </section>
+
+        <section class="panel" id="tablePanel">
+            <h2>Animal Records</h2>
+            <div class="table-actions">
+                <input type="text" id="filterName" placeholder="Filter by name...">
+                <button id="resetFilter" class="secondary">Reset Filter</button>
+            </div>
+            <div class="table-wrapper">
+                <table id="animalTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Species</th>
+                            <th>Breed</th>
+                            <th>Age</th>
+                            <th>Gender</th>
+                            <th>Health</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="panel" id="statsPanel">
+            <h2>Species Count</h2>
+            <div id="speciesCount"></div>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
