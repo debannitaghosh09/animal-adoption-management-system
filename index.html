@@ -3,108 +3,599 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Animal Adoption Management System</title>
+    <title>PawsAdopt - Every Paw Deserves a Loving Home</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Animal Adoption Management System</h1>
-            <p>Manage shelter animals with add, search, update, delete, adopt, and report functions.</p>
-        </header>
-
-        <section class="controls">
-            <button id="showAddForm">Add New Animal</button>
-            <button id="showAllAnimals">View All Animals</button>
-            <button id="showAvailableAnimals">Available Animals</button>
-            <button id="showSpeciesCount">Count by Species</button>
-        </section>
-
-        <section class="panel" id="messagePanel"></section>
-
-        <section class="panel" id="formPanel">
-            <h2 id="formTitle">Add New Animal</h2>
-            <form id="animalForm">
-                <div class="grid">
-                    <label for="animalId">Animal ID</label>
-                    <input type="number" id="animalId" min="1" required>
-
-                    <label for="animalName">Name</label>
-                    <input type="text" id="animalName" maxlength="50" required>
-
-                    <label for="animalSpecies">Species</label>
-                    <input type="text" id="animalSpecies" maxlength="30" required>
-
-                    <label for="animalBreed">Breed</label>
-                    <input type="text" id="animalBreed" maxlength="40" required>
-
-                    <label for="animalAge">Age</label>
-                    <input type="number" id="animalAge" min="0" required>
-
-                    <label for="animalGender">Gender</label>
-                    <select id="animalGender" required>
-                        <option value="">Select</option>
-                        <option value="M">M</option>
-                        <option value="F">F</option>
-                    </select>
-
-                    <label for="animalHealth">Health Status</label>
-                    <input type="text" id="animalHealth" maxlength="40" required>
-
-                    <label for="animalStatus">Adoption Status</label>
-                    <select id="animalStatus" required>
-                        <option value="Available">Available</option>
-                        <option value="Adopted">Adopted</option>
-                    </select>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" id="saveAnimal">Save Animal</button>
-                    <button type="button" id="cancelEdit" class="secondary">Cancel</button>
-                </div>
-            </form>
-        </section>
-
-        <section class="panel" id="searchPanel">
-            <h2>Search Animal by ID</h2>
-            <div class="search-group">
-                <input type="number" id="searchId" min="1" placeholder="Enter Animal ID">
-                <button id="searchButton">Search</button>
-            </div>
-            <div id="searchResult"></div>
-        </section>
-
-        <section class="panel" id="tablePanel">
-            <h2>Animal Records</h2>
-            <div class="table-actions">
-                <input type="text" id="filterName" placeholder="Filter by name...">
-                <button id="resetFilter" class="secondary">Reset Filter</button>
-            </div>
-            <div class="table-wrapper">
-                <table id="animalTable">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Species</th>
-                            <th>Breed</th>
-                            <th>Age</th>
-                            <th>Gender</th>
-                            <th>Health</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </section>
-
-        <section class="panel" id="statsPanel">
-            <h2>Species Count</h2>
-            <div id="speciesCount"></div>
-        </section>
+    <!-- Loading Animation -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loader"></div>
+        <p>Loading PawsAdopt...</p>
     </div>
 
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-paw"></i>
+                <span>PawsAdopt</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#home" class="nav-link">Home</a></li>
+                <li><a href="#adopt" class="nav-link">Adopt</a></li>
+                <li><a href="#rescue" class="nav-link">Rescue</a></li>
+                <li><a href="#stories" class="nav-link">Success Stories</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+                <li><button class="btn-primary" id="navAddBtn"><i class="fas fa-plus"></i> Add Pet</button></li>
+                <li><button id="darkModeToggle" class="dark-mode-btn" title="Toggle Dark Mode">
+                    <i class="fas fa-moon"></i>
+                </button></li>
+            </ul>
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Floating Paw Decorations -->
+    <div class="floating-paws">
+        <span class="paw" style="top: 10%; left: 5%;">🐾</span>
+        <span class="paw" style="top: 20%; right: 8%;">🐾</span>
+        <span class="paw" style="bottom: 15%; left: 10%;">🐾</span>
+        <span class="paw" style="bottom: 10%; right: 5%;">🐾</span>
+    </div>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="paw-decoration top-left">🐾</div>
+        <div class="paw-decoration bottom-right">🐾</div>
+        <div class="hero-container">
+            <div class="hero-content fade-in">
+                <h1 class="hero-title">Every Paw Deserves a <span class="highlight">Loving Home</span> 🐾</h1>
+                <p class="hero-subtitle">Connect rescued animals with caring families. Adopt, rescue and change a life today.</p>
+                <div class="hero-buttons">
+                    <button class="btn-primary btn-lg" id="heroFindBtn">
+                        <i class="fas fa-heart"></i> Adopt Now
+                    </button>
+                    <button class="btn-secondary btn-lg">
+                        <i class="fas fa-rescue-ranger"></i> Report Rescue
+                    </button>
+                </div>
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <h4 id="hero-stat-total">0</h4>
+                        <p>Animals Rescued</p>
+                    </div>
+                    <div class="hero-stat">
+                        <h4 id="hero-stat-adopted">0</h4>
+                        <p>Happy Families</p>
+                    </div>
+                    <div class="hero-stat">
+                        <h4>24/7</h4>
+                        <p>Support</p>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-illustration">
+                <svg class="illustration" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Happy Dog -->
+                    <g class="dog-illustration">
+                        <circle cx="280" cy="200" r="60" fill="#FFD6E7" opacity="0.8"/>
+                        <circle cx="280" cy="140" r="35" fill="#FFD6E7"/>
+                        <circle cx="265" cy="130" r="8" fill="#333"/>
+                        <circle cx="295" cy="130" r="8" fill="#333"/>
+                        <circle cx="280" cy="145" r="4" fill="#333"/>
+                        <path d="M 275 155 Q 280 160 285 155" stroke="#333" stroke-width="2" fill="none"/>
+                        <path d="M 260 175 Q 280 195 300 175" stroke="#333" stroke-width="2" fill="none"/>
+                        <circle cx="240" cy="200" r="8" fill="#FFD6E7"/>
+                        <circle cx="320" cy="200" r="8" fill="#FFD6E7"/>
+                    </g>
+                    <!-- Happy Cat -->
+                    <g class="cat-illustration">
+                        <circle cx="120" cy="220" r="50" fill="#D8F3FF" opacity="0.8"/>
+                        <polygon points="90,170 110,140 130,170" fill="#D8F3FF"/>
+                        <circle cx="110" cy="155" r="6" fill="#333"/>
+                        <circle cx="100" cy="210" r="6" fill="#333"/>
+                        <circle cx="140" cy="210" r="6" fill="#333"/>
+                        <path d="M 120 225 L 115 235 M 120 225 L 120 235 M 120 225 L 125 235" stroke="#333" stroke-width="2"/>
+                        <path d="M 100 240 Q 120 260 140 240" stroke="#333" stroke-width="2" fill="none"/>
+                        <circle cx="70" cy="220" r="6" fill="#D8F3FF"/>
+                    </g>
+                    <!-- Hearts -->
+                    <g class="hearts">
+                        <text x="200" y="80" font-size="40" fill="#FFE8C2">💗</text>
+                        <text x="180" y="320" font-size="35" fill="#CDEAC0">💚</text>
+                        <text x="320" y="280" font-size="30" fill="#FFE8C2">💛</text>
+                    </g>
+                </svg>
+            </div>
+        </div>
+    </section>
+
+    <!-- Adoption Call to Action -->
+    <section id="adopt" class="adopt-cta">
+        <div class="container">
+            <div class="cta-content fade-in-scroll">
+                <h2>Ready to Find Your Perfect Match?</h2>
+                <p>Browse our collection of amazing pets waiting for their forever homes</p>
+                <button class="btn-primary btn-lg" id="adoptCTA">
+                    <i class="fas fa-paw"></i> Start Adopting
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Container -->
+    <div class="container">
+
+        <!-- Featured Pets Section -->
+        <section class="featured-section fade-in-scroll">
+            <div class="section-header">
+                <h2><i class="fas fa-star"></i> Featured Pets</h2>
+                <p>Meet some of our adorable animals looking for a home</p>
+            </div>
+
+            <div class="featured-pets" id="featuredPets"></div>
+
+            <div class="view-all-container">
+                <button class="btn-primary btn-lg" id="viewAllBtn"><i class="fas fa-list"></i> View All Pets</button>
+            </div>
+        </section>
+
+        <!-- Adoption Process Section -->
+        <section id="process" class="adoption-process fade-in-scroll">
+            <div class="section-header">
+                <h2><i class="fas fa-handshake"></i> How to Adopt</h2>
+                <p>Simple steps to bring your new friend home</p>
+            </div>
+
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h3>Search & Find</h3>
+                    <p>Browse our available pets and find your perfect match</p>
+                </div>
+                <div class="timeline-connector"></div>
+                <div class="timeline-item">
+                    <div class="timeline-icon">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <h3>Meet & Greet</h3>
+                    <p>Get to know the pet and see if you're compatible</p>
+                </div>
+                <div class="timeline-connector"></div>
+                <div class="timeline-item">
+                    <div class="timeline-icon">
+                        <i class="fas fa-file-contract"></i>
+                    </div>
+                    <h3>Complete Process</h3>
+                    <p>Fill out paperwork and finalize the adoption</p>
+                </div>
+                <div class="timeline-connector"></div>
+                <div class="timeline-item">
+                    <div class="timeline-icon">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <h3>Go Home</h3>
+                    <p>Welcome your new family member with love and care</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Impact Statistics Section -->
+        <section id="stats" class="impact-stats fade-in-scroll">
+            <div class="section-header">
+                <h2><i class="fas fa-chart-line"></i> Our Impact</h2>
+                <p>Making a difference, one paw at a time</p>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-paw"></i></div>
+                    <div class="stat-number counter" data-target="500">0</div>
+                    <span class="stat-suffix">+</span>
+                    <div class="stat-label">Animals Rescued</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-home"></i></div>
+                    <div class="stat-number counter" data-target="350">0</div>
+                    <span class="stat-suffix">+</span>
+                    <div class="stat-label">Happy Families</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-heart"></i></div>
+                    <div class="stat-number counter" data-target="120">0</div>
+                    <span class="stat-suffix">+</span>
+                    <div class="stat-label">Volunteers</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-star"></i></div>
+                    <div class="stat-number"><span class="counter" data-target="95">0</span>%</div>
+                    <div class="stat-label">Successful Adoptions</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Panel with Sections -->
+        <section class="main-panel">
+            <div id="messagePanel" class="message-panel"></div>
+
+            <!-- Add/Edit Form -->
+            <div class="modal" id="formModal">
+                <div class="modal-content">
+                    <button class="modal-close" id="modalClose">&times;</button>
+                    <h2 id="formTitle">Add New Pet</h2>
+                    <form id="animalForm" class="animal-form">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="animalId">Pet ID</label>
+                                <input type="number" id="animalId" min="1" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="animalName">Name</label>
+                                <input type="text" id="animalName" maxlength="50" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="animalSpecies">Species</label>
+                                <input type="text" id="animalSpecies" maxlength="30" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="animalBreed">Breed</label>
+                                <input type="text" id="animalBreed" maxlength="40" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="animalAge">Age</label>
+                                <input type="number" id="animalAge" min="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="animalGender">Gender</label>
+                                <select id="animalGender" required>
+                                    <option value="">Select</option>
+                                    <option value="M">Male</option>
+                                    <option value="F">Female</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="animalHealth">Health Status</label>
+                                <input type="text" id="animalHealth" maxlength="40" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="animalStatus">Status</label>
+                                <select id="animalStatus" required>
+                                    <option value="Available">Available</option>
+                                    <option value="Adopted">Adopted</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">Save Pet</button>
+                            <button type="button" class="btn-secondary" id="cancelEdit">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tabs Navigation -->
+            <div class="tabs-container">
+                <button class="tab-button active" data-tab="view-tab">
+                    <i class="fas fa-list"></i> View All
+                </button>
+                <button class="tab-button" data-tab="available-tab">
+                    <i class="fas fa-heart"></i> Available Only
+                </button>
+                <button class="tab-button" data-tab="search-tab">
+                    <i class="fas fa-search"></i> Search
+                </button>
+                <button class="tab-button" data-tab="stats-tab">
+                    <i class="fas fa-chart-bar"></i> Species Count
+                </button>
+            </div>
+
+            <!-- View All Pets Tab -->
+            <div id="view-tab" class="tab-content active">
+                <div class="table-actions">
+                    <input type="text" id="filterName" placeholder="Filter by name..." class="search-input">
+                    <button id="resetFilter" class="btn-secondary">
+                        <i class="fas fa-redo"></i> Reset
+                    </button>
+                </div>
+                <div class="table-wrapper">
+                    <table class="pets-table">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-tag"></i> ID</th>
+                                <th><i class="fas fa-feather"></i> Name</th>
+                                <th><i class="fas fa-paw"></i> Species</th>
+                                <th><i class="fas fa-dog"></i> Breed</th>
+                                <th><i class="fas fa-birthday-cake"></i> Age</th>
+                                <th><i class="fas fa-venus-mars"></i> Gender</th>
+                                <th><i class="fas fa-heartbeat"></i> Health</th>
+                                <th><i class="fas fa-star"></i> Status</th>
+                                <th><i class="fas fa-cogs"></i> Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="animalTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Available Pets Tab -->
+            <div id="available-tab" class="tab-content">
+                <div class="table-wrapper">
+                    <table class="pets-table">
+                        <thead>
+                            <tr>
+                                <th><i class="fas fa-tag"></i> ID</th>
+                                <th><i class="fas fa-feather"></i> Name</th>
+                                <th><i class="fas fa-paw"></i> Species</th>
+                                <th><i class="fas fa-dog"></i> Breed</th>
+                                <th><i class="fas fa-birthday-cake"></i> Age</th>
+                                <th><i class="fas fa-venus-mars"></i> Gender</th>
+                                <th><i class="fas fa-heartbeat"></i> Health</th>
+                                <th><i class="fas fa-cogs"></i> Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="availableTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Search Tab -->
+            <div id="search-tab" class="tab-content">
+                <div class="search-group">
+                    <input type="number" id="searchId" min="1" placeholder="Enter Pet ID..." class="search-input">
+                    <button id="searchButton" class="btn-primary">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+                <div id="searchResult" class="search-result"></div>
+            </div>
+
+            <!-- Species Count Tab -->
+            <div id="stats-tab" class="tab-content">
+                <div class="species-grid" id="speciesCount"></div>
+            </div>
+        </section>
+
+        <!-- Success Stories Section -->
+        <section id="stories" class="success-stories fade-in-scroll">
+            <div class="section-header">
+                <h2><i class="fas fa-book-heart"></i> Success Stories</h2>
+                <p>Real stories from our wonderful adopters</p>
+            </div>
+
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-image">💕</div>
+                    <div class="testimonial-stars">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p>"PawsAdopt helped us find our perfect companion. The process was so smooth and the team was incredibly helpful. Max has completely transformed our lives!"</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">J</div>
+                        <div class="author-info">
+                            <h4>Jessica Chen</h4>
+                            <p>Adopted Max (Golden Retriever)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="testimonial-image">😻</div>
+                    <div class="testimonial-stars">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p>"Luna has brought so much joy to our family. Thank you PawsAdopt for connecting us with our forever friend! She's already part of our family."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">M</div>
+                        <div class="author-info">
+                            <h4>Marcus Williams</h4>
+                            <p>Adopted Luna (Siamese Cat)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial-card">
+                    <div class="testimonial-image">🦜</div>
+                    <div class="testimonial-stars">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p>"Best decision ever! The PawsAdopt team made everything easy and stress-free. Highly recommended to everyone! Tweety is the best addition to our home."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">S</div>
+                        <div class="author-info">
+                            <h4>Sarah Rodriguez</h4>
+                            <p>Adopted Tweety (Parrot)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Donate Section -->
+        <section id="donate" class="donate-section fade-in-scroll">
+            <div class="donate-content">
+                <h2><i class="fas fa-hand-holding-heart"></i> Support Our Mission</h2>
+                <p>Your donation helps us rescue and care for animals in need</p>
+                <div class="donate-buttons">
+                    <button class="donate-btn" data-amount="10">
+                        <span class="amount">$10</span>
+                        <span class="text">Feed One Pet</span>
+                    </button>
+                    <button class="donate-btn" data-amount="25">
+                        <span class="amount">$25</span>
+                        <span class="text">Medical Care</span>
+                    </button>
+                    <button class="donate-btn" data-amount="50">
+                        <span class="amount">$50</span>
+                        <span class="text">Shelter Support</span>
+                    </button>
+                    <button class="donate-btn" data-amount="100">
+                        <span class="amount">$100</span>
+                        <span class="text">Full Rescue</span>
+                    </button>
+                </div>
+                <p class="donation-note">💡 Your donation is tax-deductible and 100% goes to animal care</p>
+            </div>
+        </section>
+
+        <!-- Rescue Section -->
+        <section id="rescue" class="rescue-section fade-in-scroll">
+            <div class="rescue-content">
+                <h2><i class="fas fa-life-ring"></i> Report a Rescue</h2>
+                <p>Help us identify and rescue animals in need</p>
+                <div class="rescue-form-wrapper">
+                    <form class="rescue-form">
+                        <div class="form-group">
+                            <label>Location *</label>
+                            <input type="text" name="rescue-location" placeholder="Where did you see the animal?" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Description *</label>
+                            <textarea name="rescue-description" placeholder="Describe the animal and situation..." rows="4" required></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Your Name *</label>
+                                <input type="text" name="rescue-name" placeholder="Your name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Your Phone *</label>
+                                <input type="tel" name="rescue-phone" placeholder="Your phone number" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-primary btn-lg">
+                            <i class="fas fa-paper-plane"></i> Submit Report
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="contact-section fade-in-scroll">
+            <div class="section-header">
+                <h2><i class="fas fa-envelope"></i> Get in Touch</h2>
+                <p>Have questions? We'd love to hear from you!</p>
+            </div>
+            <div class="contact-grid">
+                <div class="contact-card">
+                    <div class="contact-icon"><i class="fas fa-envelope"></i></div>
+                    <h3>Email</h3>
+                    <p><a href="mailto:info@pawsadopt.com">info@pawsadopt.com</a></p>
+                    <p class="small">Response within 24 hours</p>
+                </div>
+                <div class="contact-card">
+                    <div class="contact-icon"><i class="fas fa-phone"></i></div>
+                    <h3>Phone</h3>
+                    <p><a href="tel:+1234567890">(123) 456-7890</a></p>
+                    <p class="small">Mon-Fri, 9 AM - 6 PM EST</p>
+                </div>
+                <div class="contact-card">
+                    <div class="contact-icon"><i class="fas fa-map-marker-alt"></i></div>
+                    <h3>Address</h3>
+                    <p>123 Paw Street</p>
+                    <p class="small">Pet City, PC 12345</p>
+                </div>
+            </div>
+            <div class="contact-form-wrapper">
+                <form class="contact-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Your Name *</label>
+                            <input type="text" name="contact-name" placeholder="Full name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Your Email *</label>
+                            <input type="email" name="contact-email" placeholder="Email address" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Subject *</label>
+                        <input type="text" name="contact-subject" placeholder="Message subject" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Message *</label>
+                        <textarea name="contact-message" placeholder="Your message..." rows="5" required></textarea>
+                    </div>
+                    <button type="submit" class="btn-primary btn-lg">
+                        <i class="fas fa-paper-plane"></i> Send Message
+                    </button>
+                </form>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Premium Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-container">
+                <div class="footer-section">
+                    <h3><i class="fas fa-paw"></i> PawsAdopt</h3>
+                    <p>Connecting loving homes with deserving pets since 2024. Every paw deserves a loving home.</p>
+                    <div class="social-links">
+                        <a href="#" title="Facebook"><i class="fab fa-facebook"></i></a>
+                        <a href="#" title="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" title="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section">
+                    <h5>Quick Links</h5>
+                    <ul>
+                        <li><a href="#home"><i class="fas fa-arrow-right"></i> Home</a></li>
+                        <li><a href="#adopt"><i class="fas fa-arrow-right"></i> Adopt</a></li>
+                        <li><a href="#rescue"><i class="fas fa-arrow-right"></i> Rescue</a></li>
+                        <li><a href="#stories"><i class="fas fa-arrow-right"></i> Stories</a></li>
+                        <li><a href="#contact"><i class="fas fa-arrow-right"></i> Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h5>Resources</h5>
+                    <ul>
+                        <li><a href="#"><i class="fas fa-arrow-right"></i> About Us</a></li>
+                        <li><a href="#"><i class="fas fa-arrow-right"></i> Careers</a></li>
+                        <li><a href="#"><i class="fas fa-arrow-right"></i> Blog</a></li>
+                        <li><a href="#"><i class="fas fa-arrow-right"></i> Privacy</a></li>
+                        <li><a href="#"><i class="fas fa-arrow-right"></i> Terms</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h5>Newsletter</h5>
+                    <p>Subscribe to get updates about available pets and success stories</p>
+                    <form class="newsletter-form">
+                        <input type="email" placeholder="Your email" required>
+                        <button type="submit"><i class="fas fa-paper-plane"></i></button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 PawsAdopt. All rights reserved. Made with <i class="fas fa-heart"></i> for animals.</p>
+        </div>
+    </footer>
+
+    <!-- All existing functionality modals and sections stay the same -->
     <script src="script.js"></script>
 </body>
 </html>

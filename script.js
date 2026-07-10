@@ -1,19 +1,311 @@
 const STORAGE_KEY = 'animalAdoptionData';
+const DARK_MODE_KEY = 'pawsAdoptDarkMode';
 let animals = [];
 let editingId = null;
 
+// DOM Elements - Core
 const messagePanel = document.getElementById('messagePanel');
-const formPanel = document.getElementById('formPanel');
-const searchPanel = document.getElementById('searchPanel');
-const tablePanel = document.getElementById('tablePanel');
-const statsPanel = document.getElementById('statsPanel');
+const formModal = document.getElementById('formModal');
 const animalForm = document.getElementById('animalForm');
 const formTitle = document.getElementById('formTitle');
+const modalClose = document.getElementById('modalClose');
+const cancelEdit = document.getElementById('cancelEdit');
+const animalTable = document.getElementById('animalTable');
+const availableTable = document.getElementById('availableTable');
+const filterName = document.getElementById('filterName');
+const resetFilter = document.getElementById('resetFilter');
+const searchId = document.getElementById('searchId');
+const searchButton = document.getElementById('searchButton');
 const searchResult = document.getElementById('searchResult');
 const speciesCount = document.getElementById('speciesCount');
-const animalTableBody = document.querySelector('#animalTable tbody');
-const filterName = document.getElementById('filterName');
+const tabButtons = document.querySelectorAll('.tab-button');
+const tabContents = document.querySelectorAll('.tab-content');
+const navAddBtn = document.getElementById('navAddBtn');
+const heroFindBtn = document.getElementById('heroFindBtn');
+const viewAllBtn = document.getElementById('viewAllBtn');
+const featuredPets = document.getElementById('featuredPets');
 
+// DOM Elements - Premium Features
+const darkModeToggle = document.getElementById('darkModeToggle');
+const loadingScreen = document.getElementById('loadingScreen');
+const hamburger = document.getElementById('hamburger');
+const navMenu = document.querySelector('.nav-menu');
+
+// Initialize
+function init() {
+    // Hide loading screen after 2 seconds
+    setTimeout(() => {
+        if (loadingScreen) {
+            loadingScreen.style.display = 'none';
+        }
+    }, 2000);
+    
+    loadAnimals();
+    initDarkMode();
+    setupEventListeners();
+    setupFormHandlers();
+    setupMobileMenu();
+    renderFeaturedPets();
+    updateStatistics();
+    renderAllAnimals();
+    setupScrollAnimations();
+    animateCounters();
+}
+
+// ============================================
+// PREMIUM FEATURES - Dark Mode
+// ============================================
+function initDarkMode() {
+    const savedDarkMode = localStorage.getItem(DARK_MODE_KEY) === 'true';
+    if (savedDarkMode) {
+        document.body.classList.add('dark-mode');
+        if (darkModeToggle) darkModeToggle.textContent = '☀️';
+    }
+    
+    if (darkModeToggle) {
+        darkModeToggle.addEventListener('click', toggleDarkMode);
+    }
+}
+
+function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+    const isDarkMode = document.body.classList.contains('dark-mode');
+    localStorage.setItem(DARK_MODE_KEY, isDarkMode);
+    darkModeToggle.textContent = isDarkMode ? '☀️' : '🌙';
+}
+
+// ============================================
+// PREMIUM FEATURES - Scroll Animations
+// ============================================
+function setupScrollAnimations() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('fade-in');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.fade-in-scroll').forEach(el => {
+        observer.observe(el);
+    });
+}
+
+// ============================================
+// PREMIUM FEATURES - Animated Counters
+// ============================================
+function animateCounters() {
+    const counters = document.querySelectorAll('.counter');
+    
+    const counterObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting && !entry.target.dataset.animated) {
+                const target = parseInt(entry.target.dataset.target) || 0;
+                animateCounterValue(entry.target, 0, target, 2000);
+                entry.target.dataset.animated = 'true';
+                counterObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+
+    counters.forEach(counter => {
+        counterObserver.observe(counter);
+    });
+}
+
+function animateCounterValue(element, start, end, duration) {
+    const startTime = performance.now();
+    
+    const animate = (currentTime) => {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const current = Math.floor(start + (end - start) * progress);
+        
+        element.textContent = current.toLocaleString();
+        
+        if (progress < 1) {
+            requestAnimationFrame(animate);
+        }
+    };
+    
+    requestAnimationFrame(animate);
+}
+
+// ============================================
+// PREMIUM FEATURES - Mobile Menu
+// ============================================
+function setupMobileMenu() {
+    if (hamburger && navMenu) {
+        hamburger.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+            hamburger.classList.toggle('active');
+        });
+        
+        // Close menu when nav link is clicked
+        navMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('active');
+                hamburger.classList.remove('active');
+            });
+        });
+    }
+}
+
+// ============================================
+// PREMIUM FEATURES - Form Handlers
+// ============================================
+function setupFormHandlers() {
+    // Rescue Form
+    const rescueForm = document.querySelector('.rescue-form');
+    if (rescueForm) {
+        rescueForm.addEventListener('submit', handleRescueSubmit);
+    }
+    
+    // Contact Form
+    const contactForm = document.querySelector('.contact-form');
+    if (contactForm) {
+        contactForm.addEventListener('submit', handleContactSubmit);
+    }
+    
+    // Newsletter Form
+    const newsletterForm = document.querySelector('.newsletter-form');
+    if (newsletterForm) {
+        newsletterForm.addEventListener('submit', handleNewsletterSubmit);
+    }
+    
+    // Donate Buttons
+    const donateButtons = document.querySelectorAll('.donate-btn');
+    donateButtons.forEach(btn => {
+        btn.addEventListener('click', handleDonation);
+    });
+    
+    // Adopt CTA Navigation
+    const adoptCTA = document.getElementById('adoptCTA');
+    if (adoptCTA) {
+        adoptCTA.addEventListener('click', () => {
+            document.querySelector('[data-tab="view-tab"]')?.click();
+            window.scrollTo({ top: document.getElementById('main-panel').offsetTop - 100, behavior: 'smooth' });
+        });
+    }
+}
+
+function handleRescueSubmit(e) {
+    e.preventDefault();
+    
+    const location = e.target.querySelector('input[name="rescue-location"]')?.value.trim();
+    const description = e.target.querySelector('textarea[name="rescue-description"]')?.value.trim();
+    const name = e.target.querySelector('input[name="rescue-name"]')?.value.trim();
+    const phone = e.target.querySelector('input[name="rescue-phone"]')?.value.trim();
+    
+    if (!location || !description || !name || !phone) {
+        showMessage('Please fill in all rescue report fields.', 'error');
+        return;
+    }
+    
+    if (phone.length < 10) {
+        showMessage('Please enter a valid phone number.', 'error');
+        return;
+    }
+    
+    showMessage('🙏 Thank you for reporting! Our rescue team will contact you soon at ' + phone, 'success');
+    e.target.reset();
+}
+
+function handleContactSubmit(e) {
+    e.preventDefault();
+    
+    const name = e.target.querySelector('input[name="contact-name"]')?.value.trim();
+    const email = e.target.querySelector('input[name="contact-email"]')?.value.trim();
+    const subject = e.target.querySelector('input[name="contact-subject"]')?.value.trim();
+    const message = e.target.querySelector('textarea[name="contact-message"]')?.value.trim();
+    
+    if (!name || !email || !subject || !message) {
+        showMessage('Please fill in all contact fields.', 'error');
+        return;
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showMessage('Please enter a valid email address.', 'error');
+        return;
+    }
+    
+    showMessage('✉️ Thank you for contacting us! We\'ll respond to ' + email + ' shortly.', 'success');
+    e.target.reset();
+}
+
+function handleNewsletterSubmit(e) {
+    e.preventDefault();
+    
+    const email = e.target.querySelector('input[type="email"]')?.value.trim();
+    
+    if (!email) {
+        showMessage('Please enter an email address.', 'error');
+        return;
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showMessage('Please enter a valid email address.', 'error');
+        return;
+    }
+    
+    showMessage('📧 Welcome to our newsletter! Check ' + email + ' for updates.', 'success');
+    e.target.reset();
+}
+
+function handleDonation(e) {
+    const amount = e.currentTarget.dataset.amount || '?';
+    showMessage('💖 Thank you for your generous donation of $' + amount + '! Your support saves lives.', 'success');
+}
+
+// Event Listeners
+function setupEventListeners() {
+    // Form Events
+    animalForm.addEventListener('submit', addAnimal);
+    modalClose.addEventListener('click', closeModal);
+    cancelEdit.addEventListener('click', closeModal);
+
+    // Button Events
+    navAddBtn.addEventListener('click', openAddModal);
+    heroFindBtn.addEventListener('click', () => {
+        document.querySelector('[data-tab="view-tab"]').click();
+        document.documentElement.scrollIntoView({ behavior: 'smooth' });
+    });
+    viewAllBtn.addEventListener('click', () => {
+        document.querySelector('[data-tab="view-tab"]').click();
+        document.documentElement.scrollIntoView({ behavior: 'smooth' });
+    });
+
+    // Tab Events
+    tabButtons.forEach(button => {
+        button.addEventListener('click', (e) => {
+            const tabId = e.currentTarget.dataset.tab;
+            switchTab(tabId);
+        });
+    });
+
+    // Table Filter Events
+    filterName.addEventListener('input', () => renderAllAnimals(filterName.value));
+    resetFilter.addEventListener('click', () => {
+        filterName.value = '';
+        renderAllAnimals();
+    });
+
+    // Search Events
+    searchButton.addEventListener('click', searchById);
+    searchId.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') searchById();
+    });
+
+    // Close modal when clicking outside
+    formModal.addEventListener('click', (e) => {
+        if (e.target === formModal) closeModal();
+    });
+}
+
+// Local Storage
 function loadAnimals() {
     const saved = localStorage.getItem(STORAGE_KEY);
     animals = saved ? JSON.parse(saved) : [];
@@ -23,19 +315,35 @@ function saveAnimals() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(animals));
 }
 
+// Messages
 function showMessage(text, type = 'success') {
-    messagePanel.innerHTML = `<div class="message ${type}">${text}</div>`;
-    setTimeout(() => {
-        messagePanel.innerHTML = '';
-    }, 4000);
+    const messageEl = document.createElement('div');
+    messageEl.className = `message ${type}`;
+    messageEl.innerHTML = `
+        <span>${text}</span>
+        <button onclick="this.parentElement.remove()" style="background:none; border:none; color:inherit; font-size:1.2rem; cursor:pointer;">&times;</button>
+    `;
+    messagePanel.appendChild(messageEl);
+    setTimeout(() => messageEl.remove(), 4000);
+}
+
+// Modal Management
+function openAddModal() {
+    clearForm();
+    formTitle.textContent = 'Add New Pet';
+    document.getElementById('animalId').disabled = false;
+    formModal.classList.add('active');
+}
+
+function closeModal() {
+    formModal.classList.remove('active');
+    clearForm();
 }
 
 function clearForm() {
     animalForm.reset();
     document.getElementById('animalStatus').value = 'Available';
     editingId = null;
-    formTitle.textContent = 'Add New Animal';
-    document.getElementById('animalId').disabled = false;
 }
 
 function setFormData(animal) {
@@ -62,14 +370,75 @@ function getFormData() {
     };
 }
 
-function renderTable(filter = '') {
+// Rendering Functions
+function renderFeaturedPets() {
+    const featured = animals.filter(a => a.status === 'Available').slice(0, 3);
+    featuredPets.innerHTML = featured.length === 0 
+        ? '<p style="grid-column: 1/-1; text-align: center; color: #999;">No featured pets available</p>'
+        : featured.map(animal => createPetCard(animal)).join('');
+}
+
+function createPetCard(animal) {
+    const icons = {
+        dog: '🐕',
+        cat: '🐈',
+        bird: '🦜',
+        rabbit: '🐰',
+        hamster: '🐹',
+        fish: '🐠',
+        default: '🐾'
+    };
+    const icon = icons[animal.species.toLowerCase()] || icons.default;
+
+    return `
+        <div class="pet-card">
+            <div class="pet-card-header">${icon}</div>
+            <div class="pet-card-body">
+                <h3>${animal.name}</h3>
+                <span class="pet-species">${animal.species}</span>
+                <p>${animal.breed}</p>
+                <div class="pet-info">
+                    <div class="pet-info-item">
+                        <div class="pet-info-label">Age</div>
+                        <div class="pet-info-value">${animal.age}y</div>
+                    </div>
+                    <div class="pet-info-item">
+                        <div class="pet-info-label">Gender</div>
+                        <div class="pet-info-value">${animal.gender}</div>
+                    </div>
+                    <div class="pet-info-item">
+                        <div class="pet-info-label">Health</div>
+                        <div class="pet-info-value">${animal.health.substring(0, 8)}...</div>
+                    </div>
+                </div>
+                <button class="btn-primary" onclick="adoptAnimal(${animal.id})">Adopt</button>
+            </div>
+        </div>
+    `;
+}
+
+function renderAllAnimals(filter = '') {
     const normalized = filter.trim().toLowerCase();
-    animalTableBody.innerHTML = '';
-    const rows = animals
-        .filter(animal => animal.name.toLowerCase().includes(normalized))
-        .map(animal => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
+    const filtered = animals.filter(animal => animal.name.toLowerCase().includes(normalized));
+    
+    animalTable.innerHTML = filtered.length === 0
+        ? '<tr><td colspan="9" style="text-align: center; padding: 30px;">No pets found</td></tr>'
+        : filtered.map(animal => createTableRow(animal, true)).join('');
+}
+
+function renderAvailableAnimals() {
+    const available = animals.filter(animal => animal.status === 'Available');
+    availableTable.innerHTML = available.length === 0
+        ? '<tr><td colspan="8" style="text-align: center; padding: 30px;">No available pets</td></tr>'
+        : available.map(animal => createTableRow(animal, false)).join('');
+}
+
+function createTableRow(animal, showStatus = true) {
+    const statusBadge = `<span class="status-badge status-${animal.status.toLowerCase()}">${animal.status}</span>`;
+    
+    if (showStatus) {
+        return `
+            <tr>
                 <td>${animal.id}</td>
                 <td>${animal.name}</td>
                 <td>${animal.species}</td>
@@ -77,210 +446,211 @@ function renderTable(filter = '') {
                 <td>${animal.age}</td>
                 <td>${animal.gender}</td>
                 <td>${animal.health}</td>
-                <td>${animal.status}</td>
+                <td>${statusBadge}</td>
                 <td class="action-buttons">
-                    <button onclick="editAnimal(${animal.id})">Edit</button>
-                    <button onclick="deleteAnimal(${animal.id})">Delete</button>
-                    <button onclick="adoptAnimal(${animal.id})">Adopt</button>
+                    <button class="btn-edit" onclick="editAnimal(${animal.id})"><i class="fas fa-edit"></i> Edit</button>
+                    <button class="btn-delete" onclick="deleteAnimal(${animal.id})"><i class="fas fa-trash"></i> Delete</button>
+                    <button class="btn-adopt" onclick="adoptAnimal(${animal.id})"><i class="fas fa-heart"></i> Adopt</button>
                 </td>
-            `;
-            return row;
-        });
-    rows.forEach(row => animalTableBody.appendChild(row));
+            </tr>
+        `;
+    } else {
+        return `
+            <tr>
+                <td>${animal.id}</td>
+                <td>${animal.name}</td>
+                <td>${animal.species}</td>
+                <td>${animal.breed}</td>
+                <td>${animal.age}</td>
+                <td>${animal.gender}</td>
+                <td>${animal.health}</td>
+                <td class="action-buttons">
+                    <button class="btn-edit" onclick="editAnimal(${animal.id})"><i class="fas fa-edit"></i> Edit</button>
+                    <button class="btn-delete" onclick="deleteAnimal(${animal.id})"><i class="fas fa-trash"></i> Delete</button>
+                    <button class="btn-adopt" onclick="adoptAnimal(${animal.id})"><i class="fas fa-heart"></i> Adopt</button>
+                </td>
+            </tr>
+        `;
+    }
 }
 
-function addAnimal(event) {
-    event.preventDefault();
+// Form Submission
+function addAnimal(e) {
+    e.preventDefault();
     const animal = getFormData();
 
-    if (!animal.id || !animal.name || !animal.species || !animal.breed || Number.isNaN(animal.age) || animal.age < 0 || !animal.gender || !animal.health) {
+    if (!animal.id || !animal.name || !animal.species || !animal.breed || Number.isNaN(animal.age) || !animal.gender || !animal.health) {
         showMessage('Please fill in all fields correctly.', 'error');
         return;
     }
 
     if (editingId === null) {
         if (animals.some(item => item.id === animal.id)) {
-            showMessage('Animal ID must be unique.', 'error');
+            showMessage('Pet ID must be unique.', 'error');
             return;
         }
         animals.push(animal);
-        showMessage(`Animal '${animal.name}' added successfully.`);
+        showMessage(`Pet '${animal.name}' added successfully.`);
     } else {
         const index = animals.findIndex(item => item.id === editingId);
         if (index === -1) {
-            showMessage('Animal not found for update.', 'error');
+            showMessage('Pet not found for update.', 'error');
             return;
         }
         animals[index] = animal;
-        showMessage(`Animal '${animal.name}' updated successfully.`);
+        showMessage(`Pet '${animal.name}' updated successfully.`);
     }
 
     saveAnimals();
-    renderTable(filterName.value);
-    clearForm();
+    renderAllAnimals();
+    renderFeaturedPets();
+    updateStatistics();
+    closeModal();
 }
 
+// CRUD Operations
 function editAnimal(id) {
     const animal = animals.find(item => item.id === id);
     if (!animal) {
-        showMessage('Animal not found.', 'error');
+        showMessage('Pet not found.', 'error');
         return;
     }
     setFormData(animal);
     editingId = id;
-    formTitle.textContent = 'Update Animal Details';
+    formTitle.textContent = 'Update Pet Details';
     document.getElementById('animalId').disabled = true;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    formModal.classList.add('active');
 }
 
 function deleteAnimal(id) {
-    if (!confirm('Are you sure you want to delete this animal?')) {
+    if (!confirm('Are you sure you want to delete this pet? This action cannot be undone.')) {
         return;
     }
     animals = animals.filter(animal => animal.id !== id);
     saveAnimals();
-    renderTable(filterName.value);
-    showMessage('Animal deleted successfully.');
+    renderAllAnimals();
+    renderFeaturedPets();
+    updateStatistics();
+    showMessage('Pet deleted successfully.');
 }
 
 function adoptAnimal(id) {
     const animal = animals.find(item => item.id === id);
     if (!animal) {
-        showMessage('Animal not found.', 'error');
+        showMessage('Pet not found.', 'error');
         return;
     }
     if (animal.status === 'Adopted') {
-        showMessage('This animal is already adopted.', 'error');
+        showMessage('This pet is already adopted.', 'error');
         return;
     }
-    if (!confirm(`Adopt '${animal.name}'?`)) {
+    if (!confirm(`Adopt '${animal.name}'? This pet will be marked as adopted.`)) {
         return;
     }
     animal.status = 'Adopted';
     saveAnimals();
-    renderTable(filterName.value);
-    showMessage(`'${animal.name}' has been adopted.`);
+    renderAllAnimals();
+    renderFeaturedPets();
+    updateStatistics();
+    renderAvailableAnimals();
+    showMessage(`🎉 Congratulations! '${animal.name}' has been adopted!`);
 }
 
-function showAvailableAnimals() {
-    tablePanel.scrollIntoView({ behavior: 'smooth' });
-    renderTable('');
-    animalTableBody.innerHTML = '';
-    const available = animals.filter(animal => animal.status === 'Available');
-    available.forEach(animal => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${animal.id}</td>
-            <td>${animal.name}</td>
-            <td>${animal.species}</td>
-            <td>${animal.breed}</td>
-            <td>${animal.age}</td>
-            <td>${animal.gender}</td>
-            <td>${animal.health}</td>
-            <td>${animal.status}</td>
-            <td class="action-buttons">
-                <button onclick="editAnimal(${animal.id})">Edit</button>
-                <button onclick="deleteAnimal(${animal.id})">Delete</button>
-                <button onclick="adoptAnimal(${animal.id})">Adopt</button>
-            </td>
-        `;
-        animalTableBody.appendChild(row);
-    });
-    if (available.length === 0) {
-        animalTableBody.innerHTML = '<tr><td colspan="9">No available animals.</td></tr>';
-    }
-}
-
-function countBySpecies() {
-    const counts = {};
-    animals.forEach(animal => {
-        const species = animal.species.trim().toLowerCase();
-        if (species) {
-            counts[species] = (counts[species] || 0) + 1;
-        }
-    });
-    speciesCount.innerHTML = '';
-    if (Object.keys(counts).length === 0) {
-        speciesCount.textContent = 'No records to count.';
-        return;
-    }
-    const list = document.createElement('ul');
-    Object.entries(counts).forEach(([species, total]) => {
-        const item = document.createElement('li');
-        item.textContent = `${species.charAt(0).toUpperCase() + species.slice(1)}: ${total}`;
-        list.appendChild(item);
-    });
-    speciesCount.appendChild(list);
-}
-
+// Search
 function searchById() {
-    const searchId = Number(document.getElementById('searchId').value);
+    const id = Number(searchId.value);
     searchResult.innerHTML = '';
-    if (!searchId) {
-        searchResult.textContent = 'Enter a valid Animal ID to search.';
+    
+    if (!id) {
+        showMessage('Enter a valid Pet ID to search.', 'error');
         return;
     }
-    const animal = animals.find(item => item.id === searchId);
+    
+    const animal = animals.find(item => item.id === id);
     if (!animal) {
-        searchResult.textContent = 'Animal not found.';
+        searchResult.innerHTML = `
+            <div class="search-result-card" style="background: #fee; border-left-color: #e44;">
+                <p><i class="fas fa-times-circle"></i> Pet not found with ID ${id}</p>
+            </div>
+        `;
         return;
     }
+    
     searchResult.innerHTML = `
-        <div class="panel">
-            <h3>${animal.name} (ID: ${animal.id})</h3>
+        <div class="search-result-card">
+            <h3><i class="fas fa-paw"></i> ${animal.name} (ID: ${animal.id})</h3>
             <p><strong>Species:</strong> ${animal.species}</p>
             <p><strong>Breed:</strong> ${animal.breed}</p>
-            <p><strong>Age:</strong> ${animal.age}</p>
+            <p><strong>Age:</strong> ${animal.age} years</p>
             <p><strong>Gender:</strong> ${animal.gender}</p>
-            <p><strong>Health:</strong> ${animal.health}</p>
-            <p><strong>Status:</strong> ${animal.status}</p>
+            <p><strong>Health Status:</strong> ${animal.health}</p>
+            <p><strong>Adoption Status:</strong> <span class="status-badge status-${animal.status.toLowerCase()}">${animal.status}</span></p>
+            <div class="action-buttons" style="margin-top: 15px;">
+                <button class="btn-edit" onclick="editAnimal(${animal.id})"><i class="fas fa-edit"></i> Edit</button>
+                <button class="btn-delete" onclick="deleteAnimal(${animal.id})"><i class="fas fa-trash"></i> Delete</button>
+                <button class="btn-adopt" onclick="adoptAnimal(${animal.id})"><i class="fas fa-heart"></i> Adopt</button>
+            </div>
         </div>
     `;
 }
 
-function showSection(sectionId) {
-    [formPanel, searchPanel, tablePanel, statsPanel].forEach(section => {
-        if (section.id === sectionId) {
-            section.classList.remove('hidden');
-        } else {
-            section.classList.add('hidden');
+// Tab Switching
+function switchTab(tabId) {
+    tabButtons.forEach(btn => btn.classList.remove('active'));
+    tabContents.forEach(content => content.classList.remove('active'));
+    
+    document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+
+    if (tabId === 'available-tab') {
+        renderAvailableAnimals();
+    } else if (tabId === 'stats-tab') {
+        renderSpeciesCount();
+    }
+}
+
+// Statistics
+function updateStatistics() {
+    const total = animals.length;
+    const available = animals.filter(a => a.status === 'Available').length;
+    const adopted = animals.filter(a => a.status === 'Adopted').length;
+    const species = new Set(animals.map(a => a.species.toLowerCase())).size;
+
+    // Update hero stats if they exist
+    const statTotal = document.getElementById('stat-total') || document.getElementById('hero-stat-total');
+    const statAvailable = document.getElementById('stat-available') || document.getElementById('hero-stat-available');
+    const statAdopted = document.getElementById('stat-adopted') || document.getElementById('hero-stat-adopted');
+    const statSpecies = document.getElementById('stat-species') || document.getElementById('hero-stat-species');
+    
+    if (statTotal) statTotal.textContent = total;
+    if (statAvailable) statAvailable.textContent = available;
+    if (statAdopted) statAdopted.textContent = adopted;
+    if (statSpecies) statSpecies.textContent = species;
+}
+
+function renderSpeciesCount() {
+    const counts = {};
+    animals.forEach(animal => {
+        const species = animal.species.trim();
+        if (species) {
+            counts[species] = (counts[species] || 0) + 1;
         }
     });
+
+    if (Object.keys(counts).length === 0) {
+        speciesCount.innerHTML = '<p style="text-align: center; color: #999;">No pets to count</p>';
+        return;
+    }
+
+    speciesCount.innerHTML = Object.entries(counts)
+        .map(([species, count]) => `
+            <div class="species-item">
+                <div class="species-name">${species}</div>
+                <div class="species-count">${count}</div>
+            </div>
+        `)
+        .join('');
 }
 
-function init() {
-    loadAnimals();
-    renderTable();
-    countBySpecies();
-    showSection('formPanel');
-
-    document.getElementById('showAddForm').addEventListener('click', () => {
-        showSection('formPanel');
-    });
-
-    document.getElementById('showAllAnimals').addEventListener('click', () => {
-        showSection('tablePanel');
-        renderTable(filterName.value);
-    });
-
-    document.getElementById('showAvailableAnimals').addEventListener('click', () => {
-        showSection('tablePanel');
-        showAvailableAnimals();
-    });
-
-    document.getElementById('showSpeciesCount').addEventListener('click', () => {
-        showSection('statsPanel');
-        countBySpecies();
-    });
-
-    animalForm.addEventListener('submit', addAnimal);
-    document.getElementById('cancelEdit').addEventListener('click', clearForm);
-    document.getElementById('searchButton').addEventListener('click', searchById);
-    document.getElementById('resetFilter').addEventListener('click', () => {
-        filterName.value = '';
-        renderTable();
-    });
-    filterName.addEventListener('input', () => renderTable(filterName.value));
-}
-
-window.addEventListener('DOMContentLoaded', init);
+// Initialize on DOM load
+document.addEventListener('DOMContentLoaded', init);
