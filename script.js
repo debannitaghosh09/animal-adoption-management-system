@@ -1,5 +1,11 @@
 const STORAGE_KEY = 'animalAdoptionData';
 const DARK_MODE_KEY = 'pawsAdoptDarkMode';
+const PREMIUM_STATS = {
+    rescued: 250,
+    families: 180,
+    support: 24,
+    success: 98
+};
 let animals = [];
 let editingId = null;
 
@@ -230,8 +236,7 @@ function handleRescueSubmit(e) {
         showMessage('Please enter a valid phone number.', 'error');
         return;
     }
-    
-    showMessage('Thank you for reporting. Our rescue team will contact you soon at ' + phone, 'success');
+        showMessage('Thank you for reporting. Our rescue team will contact you soon at ' + phone, 'success');
     e.target.reset();
 }
 
@@ -652,31 +657,25 @@ function switchTab(tabId) {
 
 // Statistics
 function updateStatistics() {
-    const total = animals.length;
-    const available = animals.filter(a => a.status === 'Available').length;
-    const adopted = animals.filter(a => a.status === 'Adopted').length;
-    const species = new Set(animals.map(a => a.species.toLowerCase())).size;
-
     const heroTotal = document.getElementById('hero-stat-total');
     const heroAdopted = document.getElementById('hero-stat-adopted');
+    const impactStats = document.querySelectorAll('.counter');
 
     if (heroTotal) {
-        animateCounterValue(heroTotal, 0, total, 1400);
+        animateCounterValue(heroTotal, 0, PREMIUM_STATS.rescued, 1400);
     }
 
     if (heroAdopted) {
-        animateCounterValue(heroAdopted, 0, adopted, 1400);
+        animateCounterValue(heroAdopted, 0, PREMIUM_STATS.families, 1400);
     }
 
-    const statTotal = document.getElementById('stat-total');
-    const statAvailable = document.getElementById('stat-available');
-    const statAdopted = document.getElementById('stat-adopted');
-    const statSpecies = document.getElementById('stat-species');
-
-    if (statTotal) statTotal.textContent = total;
-    if (statAvailable) statAvailable.textContent = available;
-    if (statAdopted) statAdopted.textContent = adopted;
-    if (statSpecies) statSpecies.textContent = species;
+    impactStats.forEach(counter => {
+        const target = parseInt(counter.dataset.target || '0', 10);
+        if (!counter.dataset.animated) {
+            animateCounterValue(counter, 0, target, 1800);
+            counter.dataset.animated = 'true';
+        }
+    });
 }
 
 function renderSpeciesCount() {
