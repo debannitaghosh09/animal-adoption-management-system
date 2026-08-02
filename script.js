@@ -45,6 +45,7 @@ function init() {
     setupEventListeners();
     setupFormHandlers();
     setupMobileMenu();
+    setupFaqAccordion();
     renderFeaturedPets();
     updateStatistics();
     renderAllAnimals();
@@ -152,6 +153,25 @@ function setupMobileMenu() {
     }
 }
 
+function setupFaqAccordion() {
+    document.querySelectorAll('.faq-item').forEach(item => {
+        const button = item.querySelector('.faq-question');
+        if (!button) return;
+
+        button.addEventListener('click', () => {
+            const isActive = item.classList.contains('active');
+
+            document.querySelectorAll('.faq-item').forEach(entry => {
+                entry.classList.remove('active');
+            });
+
+            if (!isActive) {
+                item.classList.add('active');
+            }
+        });
+    });
+}
+
 // ============================================
 // PREMIUM FEATURES - Form Handlers
 // ============================================
@@ -185,7 +205,10 @@ function setupFormHandlers() {
     if (adoptCTA) {
         adoptCTA.addEventListener('click', () => {
             document.querySelector('[data-tab="view-tab"]')?.click();
-            window.scrollTo({ top: document.getElementById('main-panel').offsetTop - 100, behavior: 'smooth' });
+            const mainPanel = document.querySelector('.main-panel');
+            if (mainPanel) {
+                window.scrollTo({ top: mainPanel.offsetTop - 100, behavior: 'smooth' });
+            }
         });
     }
 }
@@ -208,7 +231,7 @@ function handleRescueSubmit(e) {
         return;
     }
     
-    showMessage('🙏 Thank you for reporting! Our rescue team will contact you soon at ' + phone, 'success');
+    showMessage('Thank you for reporting. Our rescue team will contact you soon at ' + phone, 'success');
     e.target.reset();
 }
 
@@ -378,21 +401,39 @@ function renderFeaturedPets() {
         : featured.map(animal => createPetCard(animal)).join('');
 }
 
-function createPetCard(animal) {
-    const icons = {
-        dog: '🐕',
-        cat: '🐈',
-        bird: '🦜',
-        rabbit: '🐰',
-        hamster: '🐹',
-        fish: '🐠',
-        default: '🐾'
+function getAnimalPhoto(animal) {
+    const speciesPhotos = {
+        dog: 'https://images.unsplash.com/photo-1518717758536-85ae29035b6d?auto=format&fit=crop&w=900&q=80',
+        cat: 'https://images.unsplash.com/photo-1511044568932-338cba0ad803?auto=format&fit=crop&w=900&q=80',
+        bird: 'https://images.unsplash.com/photo-1444464666168-49d633b86797?auto=format&fit=crop&w=900&q=80',
+        rabbit: 'https://images.unsplash.com/photo-1585110396000-c9ffd4e4b308?auto=format&fit=crop&w=900&q=80',
+        hamster: 'https://images.unsplash.com/photo-1548767797-d8c844163c4c?auto=format&fit=crop&w=900&q=80',
+        fish: 'https://images.unsplash.com/photo-1535591273668-578e31182c4f?auto=format&fit=crop&w=900&q=80'
     };
-    const icon = icons[animal.species.toLowerCase()] || icons.default;
+
+    const namePhotos = {
+        bella: 'https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&w=900&q=80',
+        max: 'https://images.unsplash.com/photo-1518717758536-85ae29035b6d?auto=format&fit=crop&w=900&q=80',
+        luna: 'https://images.unsplash.com/photo-1543852786-1cf6624b9987?auto=format&fit=crop&w=900&q=80',
+        mocha: 'https://images.unsplash.com/photo-1518791841217-8f162f1e1131?auto=format&fit=crop&w=900&q=80'
+    };
+
+    const normalizedName = (animal.name || '').trim().toLowerCase();
+    if (namePhotos[normalizedName]) {
+        return namePhotos[normalizedName];
+    }
+
+    return speciesPhotos[animal.species.toLowerCase()] || 'https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&w=900&q=80';
+}
+
+function createPetCard(animal) {
+    const photo = getAnimalPhoto(animal);
 
     return `
         <div class="pet-card">
-            <div class="pet-card-header">${icon}</div>
+            <div class="pet-card-header">
+                <img src="${photo}" alt="${animal.name} the ${animal.species}" loading="lazy">
+            </div>
             <div class="pet-card-body">
                 <h3>${animal.name}</h3>
                 <span class="pet-species">${animal.species}</span>
@@ -616,12 +657,22 @@ function updateStatistics() {
     const adopted = animals.filter(a => a.status === 'Adopted').length;
     const species = new Set(animals.map(a => a.species.toLowerCase())).size;
 
-    // Update hero stats if they exist
-    const statTotal = document.getElementById('stat-total') || document.getElementById('hero-stat-total');
-    const statAvailable = document.getElementById('stat-available') || document.getElementById('hero-stat-available');
-    const statAdopted = document.getElementById('stat-adopted') || document.getElementById('hero-stat-adopted');
-    const statSpecies = document.getElementById('stat-species') || document.getElementById('hero-stat-species');
-    
+    const heroTotal = document.getElementById('hero-stat-total');
+    const heroAdopted = document.getElementById('hero-stat-adopted');
+
+    if (heroTotal) {
+        animateCounterValue(heroTotal, 0, total, 1400);
+    }
+
+    if (heroAdopted) {
+        animateCounterValue(heroAdopted, 0, adopted, 1400);
+    }
+
+    const statTotal = document.getElementById('stat-total');
+    const statAvailable = document.getElementById('stat-available');
+    const statAdopted = document.getElementById('stat-adopted');
+    const statSpecies = document.getElementById('stat-species');
+
     if (statTotal) statTotal.textContent = total;
     if (statAvailable) statAvailable.textContent = available;
     if (statAdopted) statAdopted.textContent = adopted;
